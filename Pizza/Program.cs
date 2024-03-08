@@ -4,90 +4,84 @@ class Program
 {
     static void Main()
     {
-        BaseForPizza baseForPizza = new();
-        Pizza pizza = new BaseForPizza().Make(new ThinPizza(), new ItalianPizza());
-        Console.WriteLine(pizza);
-        pizza = new TomatoPizza(pizza);
-        Console.WriteLine(pizza);
-
-        //Pizza pizza1 = new ItalianPizza();
-        //pizza1 = new TomatoPizza(pizza1); // итальянская с томатами
-        //Console.WriteLine("Название: {0}", pizza1.Name);
-        //Console.WriteLine("Цена: {0}", pizza1.GetCost());
-        //Pizza pizza2 = new ItalianPizza();
-        //pizza2 = new CheesePizza(pizza2);// итальянская с сыром
-        //Console.WriteLine("Название: {0}", pizza2.Name);
-        //Console.WriteLine("Цена: {0}", pizza2.GetCost());
-        //Pizza pizza3 = new BulgerianPizza();
-        //pizza3 = new TomatoPizza(pizza3);
-        //pizza3 = new CheesePizza(pizza3);//болгарская с томатами и сыром
-        //Console.WriteLine("Название: {0}", pizza3.Name);
-        //Console.WriteLine("Цена: {0}", pizza3.GetCost());
+        Pizza pizza = new BaseForPizza().Make(new ItalianPizza(), new ThinPizza());
+        Console.WriteLine(pizza);   //Итальянская пицца на тонком тесте
+        Pizza pizza2 = new BaseForPizza().Make(new ItalianPizza(), new ThinPizza());
+        pizza2 = new TomatoPizza(pizza2);
+        Console.WriteLine(pizza2);  //Итальянская пицца на тонком тесте с томатом
+        Pizza pizza3 = new BaseForPizza().Make(new ItalianPizza(), new ThinPizza());
+        pizza3 = new TomatoPizza(pizza3);
+        pizza3 = new CheesePizza(pizza3);
+        Console.WriteLine(pizza3);  //Итальянская пицца на тонком тесте с томатом и с сыром
+        Pizza pizza4 = new BaseForPizza().Make(new BulgerianPizza(), new ThickPizza());
+        Console.WriteLine(pizza4);  //Болгарская пица на толстом тесте с томатом и с сыром
         Console.ReadLine();
     }
 }
 
-class BaseForPizza
-{
-    public Pizza Make(PizzaBuilder doudh, IPizzaType type)
+class BaseForPizza                  //Паттерн Строитель, метод создания класса - dirrector
+{   
+    public Pizza Make(PizzaBuilder type, IPizzaDough dough)
     {
-        PizzaBuilder builder = doudh;
-        builder.SetDough();
-        builder.SetType(type);
+        PizzaBuilder builder = type;
+        builder.SetType();
+        builder.SetDough(dough);
         return builder.Pizza;
     }
 }
 
-abstract class PizzaBuilder
+abstract class PizzaBuilder         //Паттерн Строитель, абстрактный класс порядка строительства - builder
 {
-
     public Pizza Pizza { get; set; } = new();
-    public abstract void SetDough();
-    public abstract void SetType(IPizzaType Dough);
+    //Поскольку у нас был фабричный метод для создания класса пиццы, а теперь мы применили паттерн строитель,
+    //то будет правильно метод определения типа пицы включить в функционал строителя (поскольку это разные паттерны для одной цели - массового создания класса)
+    public abstract void SetType();
+    public abstract void SetDough(IPizzaDough Dough); 
 }
 
-class ThinPizza : PizzaBuilder
+class ItalianPizza : PizzaBuilder      //Паттерн Строитель, конкретный класс строительства - ConcreteBuilder (итальянская пицца)
 {
-    public override void SetDough()
+    public override void SetType()
     {
         this.Pizza = new Pizza
         {
-            Dough = "тонком тесте",
+            Type = "Итальянская пицца",
             Cost = 10
         };
     }
 
-    public override void SetType(IPizzaType dough)
+    public override void SetDough(IPizzaDough dough)
     {
-        this.Pizza.Type = dough.Title;
+        this.Pizza.Dough = dough.Title;
         this.Pizza.Cost += dough.Cost;
     }
 }
 
-class ThickPizza : PizzaBuilder
+class BulgerianPizza : PizzaBuilder     //Паттерн Строитель, конкретный классы выстраивания - ConcreteBuilder (болгарская пицца)
 {
-    public override void SetDough()
+    public override void SetType()
     {
         this.Pizza = new Pizza
         {
-            Dough = "толстом тесте",
-            Cost = 20
+            Dough = "Болгарская пицца",
+            Cost = 8
         };
     }
 
-    public override void SetType(IPizzaType dough)
+    public override void SetDough(IPizzaDough dough)
     {
         this.Pizza.Type = dough.Title;
         this.Pizza.Cost += dough.Cost;
     }
 }
 
-class Pizza
+//Наша модель,
+class Pizza                         
 {
-    public string Dough { get; set; }
-    public string Type { get; set; }
-    public double Cost { get; set; }
-    public List<IIngredient> Ingredients { get; set; } = new();
+    public string Dough { get; set; }                           //элемент product для паттерна строитель 
+    public string Type { get; set; }                            //элемент product для паттерна строитель
+    public double Cost { get; set; }                            //элемент product для паттерна строитель
+    public List<IIngredient> Ingredients { get; set; } = new(); //элемент сomponent для паттерна декоратор
 
     public override string ToString()
     {
@@ -95,7 +89,7 @@ class Pizza
         double Cost = this.Cost;
         if (Ingredients?.Count > 0)
         {
-            result = string.Join(", ", Ingredients);
+            result += " " + string.Join(", ", (IEnumerable<IIngredient>)Ingredients);
             Cost += Ingredients.Sum(el => el.Cost);
         }
         return result + " - " + Cost + " р.";
