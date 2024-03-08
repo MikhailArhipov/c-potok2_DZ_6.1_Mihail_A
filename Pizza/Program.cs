@@ -63,14 +63,14 @@ class BulgerianPizza : PizzaBuilder     //Паттерн Строитель, к�
     {
         this.Pizza = new Pizza
         {
-            Dough = "Болгарская пицца",
+            Type = "Болгарская пицца",
             Cost = 8
         };
     }
 
     public override void SetDough(IPizzaDough dough)
     {
-        this.Pizza.Type = dough.Title;
+        this.Pizza.Dough = dough.Title;
         this.Pizza.Cost += dough.Cost;
     }
 }
